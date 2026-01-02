@@ -32,7 +32,7 @@ Before you begin, ensure you have the following installed:
 - **Docker** (v20.10 or higher) and **Docker Compose** (v2.0 or higher)
   - [Install Docker Desktop](https://www.docker.com/products/docker-desktop)
 - **Node.js** (v18 or higher) - Only needed for manual setup
-- **npm** or **yarn** - Only needed for manual setup
+- **yarn** - Only needed for manual setup
 - **Git**
 
 ## 🐳 Quick Start with Docker
@@ -113,7 +113,7 @@ If you prefer to run services manually without Docker:
 
 2. **Install dependencies**
    ```bash
-   npm install
+   yarn install
    ```
 
 3. **Set up environment variables**
@@ -140,7 +140,7 @@ If you prefer to run services manually without Docker:
 
 5. **Start the backend server**
    ```bash
-   npm run dev
+   yarn dev
    ```
 
 ### Frontend Setup
@@ -152,7 +152,7 @@ If you prefer to run services manually without Docker:
 
 2. **Install dependencies**
    ```bash
-   npm install
+   yarn install
    ```
 
 3. **Update API URL** (if backend is on different port)
@@ -163,7 +163,7 @@ If you prefer to run services manually without Docker:
 
 4. **Start the development server**
    ```bash
-   npm run dev
+   yarn dev
    ```
 
 5. **Access the application**
@@ -272,11 +272,11 @@ docker run -d -p 27017:27017 --name mongodb mongo:7
 
 # Terminal 2: Start Backend
 cd backend
-npm run dev
+yarn dev
 
 # Terminal 3: Start Frontend
 cd frontend
-npm run dev
+yarn dev
 ```
 
 ### Making Changes
@@ -313,14 +313,14 @@ VITE_API_BASE_URL=http://localhost:3000/api/wallet
 
 ```bash
 cd backend
-npm test
+yarn test
 ```
 
 ### Frontend Tests
 
 ```bash
 cd frontend
-npm run lint
+yarn lint
 ```
 
 ## 🚢 Deployment
@@ -347,7 +347,7 @@ For production, update environment variables:
 
 **Frontend:**
 - Update API base URL to production endpoint
-- Build optimized bundle: `npm run build`
+- Build optimized bundle: `yarn build`
 
 ## 🐛 Troubleshooting
 

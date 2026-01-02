@@ -95,7 +95,7 @@ backend/
 
 - Node.js (v18 or higher)
 - MongoDB (v7 or higher)
-- npm or yarn
+- yarn
 
 ### Installation
 
@@ -107,7 +107,7 @@ backend/
 
 2. **Install dependencies**
    ```bash
-   npm install
+   yarn install
    ```
 
 3. **Set up environment variables**
@@ -128,13 +128,13 @@ backend/
 5. **Run the application**
    ```bash
    # Development mode
-   npm run dev
+   yarn dev
    
    # Production mode
-   npm start
+   yarn start
    
    # With clustering (utilizes all CPU cores)
-   npm run start:cluster
+   ENABLE_CLUSTER=true yarn start
    ```
 
 The server will start on `http://localhost:3000` (or the port specified in `PORT` environment variable).
@@ -582,7 +582,7 @@ The codebase follows a **layered architecture** with clear separation of concern
 ### Run Tests
 
 ```bash
-npm test
+yarn test
 ```
 
 ### Test Structure

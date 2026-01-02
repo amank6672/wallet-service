@@ -146,26 +146,26 @@ App
 
 ### Prerequisites
 - Node.js 18+ 
-- npm or yarn
+- yarn
 
 ### Installation
 ```bash
-npm install
+yarn install
 ```
 
 ### Development
 ```bash
-npm run dev
+yarn dev
 ```
 
 ### Production Build
 ```bash
-npm run build
+yarn build
 ```
 
 ### Preview Production Build
 ```bash
-npm run preview
+yarn preview
 ```
 
 ## 🔍 Performance Metrics
@@ -222,7 +222,7 @@ VITE_API_BASE_URL=http://localhost:3000/api/wallet
 
 ### Build for Production
 ```bash
-npm run build
+yarn build
 ```
 
 ### Deploy

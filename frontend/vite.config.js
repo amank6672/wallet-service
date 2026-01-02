@@ -40,10 +40,12 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
+    host: '0.0.0.0',
   },
-  // Preview configuration
+  // Preview configuration (for production Docker builds)
   preview: {
-    port: 4173,
+    port: 3001,
     strictPort: true,
+    host: '0.0.0.0',
   },
 });
