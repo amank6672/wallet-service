@@ -9,6 +9,7 @@ import { rateLimiter } from './middleware/rateLimiter.js';
 import { logger } from './utils/logger.js';
 import { healthCheck } from './controllers/healthController.js';
 import { requestContextMiddleware } from './utils/requestContext.js';
+import { getCorsOptions } from './utils/cors.js';
 
 const app = express();
 
@@ -19,13 +20,7 @@ app.use(helmet());
 app.use(compression());
 
 // CORS configuration
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Idempotency-Key'],
-  credentials: true,
-};
-app.use(cors(corsOptions));
+app.use(cors(getCorsOptions()));
 
 // Request context middleware (must be early in the chain)
 app.use(requestContextMiddleware);
