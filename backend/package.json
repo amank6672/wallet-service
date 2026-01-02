@@ -1,0 +1,15 @@
+{
+    "name": "wallet-backend",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "nodemon src/server.js"
+    },
+    "dependencies": {
+        "big.js": "^6.2.1",
+        "express": "^4.19.2",
+        "mongoose": "^8.0.0",
+        "cors": "^2.8.5",
+        "uuid": "^9.0.1"
+    }
+}
