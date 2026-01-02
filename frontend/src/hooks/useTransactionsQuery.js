@@ -4,23 +4,21 @@ import { PAGINATION } from '../config/constants.js';
 import { walletKeys } from './useWalletQuery.js';
 
 /**
- * Hook to fetch transactions with pagination and sorting
+ * Hook to fetch transactions with skip/limit pagination and sorting
  */
 export function useTransactions(walletId, options = {}) {
   const {
+    skip = 0,
     limit = PAGINATION.DEFAULT_PAGE_SIZE,
-    cursor = null,
-    type = null,
-    sortBy = 'createdAt',
+    sortBy = 'date',
     sortOrder = 'desc',
     enabled = true,
     ...queryOptions
   } = options;
 
   const queryKey = walletKeys.transactions(walletId, {
+    skip,
     limit,
-    cursor,
-    type,
     sortBy,
     sortOrder,
   });
@@ -30,12 +28,13 @@ export function useTransactions(walletId, options = {}) {
     queryFn: ({ signal }) => 
       getTransactions(
         walletId,
-        { limit, cursor, type, sortBy, sortOrder },
+        { skip, limit, sortBy, sortOrder },
         signal
       ),
     enabled: !!walletId && enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 0, // Always refetch when query key changes (skip/limit/sort changes)
     gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+    refetchOnMount: true, // Refetch when component mounts
     ...queryOptions,
   });
 }

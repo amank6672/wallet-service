@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { WalletProvider } from './context/WalletContext.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { LoadingSkeleton } from './components/LoadingSkeleton.jsx';
 
@@ -16,7 +15,7 @@ const TransactionsPage = lazy(() => import('./pages/TransactionsPage.jsx'));
 function PageLoader() {
   return (
     <div style={{ padding: '40px', display: 'flex', justifyContent: 'center' }}>
-      <LoadingSkeleton lines={5} showHeader />
+      <LoadingSkeleton />
     </div>
   );
 }
@@ -49,16 +48,14 @@ export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <WalletProvider>
-          <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<WalletPage />} />
-                <Route path="/transactions" element={<TransactionsPage />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </WalletProvider>
+        <BrowserRouter>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<WalletPage />} />
+              <Route path="/transactions" element={<TransactionsPage />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
     </ErrorBoundary>

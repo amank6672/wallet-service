@@ -41,25 +41,23 @@ export async function transact(walletId, payload, signal) {
 }
 
 /**
- * Get transactions with cursor-based pagination
+ * Get transactions with skip/limit pagination
  * @param {string} walletId - Wallet ID
  * @param {object} options - Query options
+ * @param {number} options.skip - Number of transactions to skip
  * @param {number} options.limit - Number of transactions to fetch
- * @param {string} options.cursor - Cursor for pagination
- * @param {string} options.type - Filter by type
- * @param {string} options.sortBy - Field to sort by
- * @param {string} options.sortOrder - Sort order
+ * @param {string} options.sortBy - Field to sort by (date or amount)
+ * @param {string} options.sortOrder - Sort order (asc/desc)
  * @param {AbortSignal} signal - Abort signal for request cancellation
  */
 export async function getTransactions(walletId, options = {}, signal) {
-  const { limit = 50, cursor, type, sortBy, sortOrder } = options;
+  const { skip = 0, limit = 25, sortBy = 'date', sortOrder = 'desc' } = options;
   const params = new URLSearchParams({
     walletId,
+    skip: skip.toString(),
     limit: limit.toString(),
   });
   
-  if (cursor) params.append('cursor', cursor);
-  if (type) params.append('type', type);
   if (sortBy) params.append('sortBy', sortBy);
   if (sortOrder) params.append('sortOrder', sortOrder);
   

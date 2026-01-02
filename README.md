@@ -56,6 +56,7 @@ This command will:
 - Build the MongoDB, backend, and frontend Docker images
 - Start all services in the correct order
 - Set up networking between services
+- Enable hot-reloading for backend (nodemon) and frontend (Vite) via volume mounts
 
 ### Step 3: Access the Application
 
@@ -223,9 +224,30 @@ Content-Type: application/json
 }
 ```
 
+**Response:**
+```json
+{
+  "id": "507f1f77bcf86cd799439011",
+  "balance": "1000.5000",
+  "transactionId": "507f1f77bcf86cd799439012",
+  "name": "John Doe",
+  "date": "2024-01-15T10:30:00.000Z"
+}
+```
+
 #### Get Wallet
 ```http
 GET /api/wallet/wallet/:id
+```
+
+**Response:**
+```json
+{
+  "id": "507f1f77bcf86cd799439011",
+  "balance": "1000.5000",
+  "name": "John Doe",
+  "date": "2024-01-15T10:30:00.000Z"
+}
 ```
 
 #### Process Transaction
@@ -240,9 +262,44 @@ X-Idempotency-Key: optional-unique-key
 }
 ```
 
+**Response:**
+```json
+{
+  "balance": "1100.5000",
+  "transactionId": "507f1f77bcf86cd799439013"
+}
+```
+
+**Note:** 
+- For credit, use positive amount. For debit, use negative amount
+- Amount supports up to 4 decimal places (e.g., 20.5612, 4.1203, 0.321)
+- All amounts are displayed with up to 4 decimal places in the UI, with trailing zeros removed for readability
+
 #### Get Transactions
 ```http
-GET /api/wallet/transactions?walletId=xxx&limit=50&cursor=xxx&sortBy=createdAt&sortOrder=desc
+GET /api/wallet/transactions?walletId=xxx&skip=0&limit=25&sortBy=date&sortOrder=desc
+```
+
+**Query Parameters:**
+- `walletId` (required): Wallet ID
+- `skip` (optional, default: 0): Number of transactions to skip
+- `limit` (optional, default: 25): Number of transactions to return
+- `sortBy` (optional, default: 'date'): Sort field ('date' or 'amount')
+- `sortOrder` (optional, default: 'desc'): Sort order ('asc' or 'desc')
+
+**Response:** Array of transactions
+```json
+[
+  {
+    "id": "507f1f77bcf86cd799439013",
+    "walletId": "507f1f77bcf86cd799439011",
+    "amount": "100.5000",
+    "balance": "1100.5000",
+    "description": "Payment for services",
+    "date": "2024-01-15T10:35:00.000Z",
+    "type": "CREDIT"
+  }
+]
 ```
 
 #### Export CSV
@@ -281,15 +338,19 @@ yarn dev
 
 ### Making Changes
 
+**With Docker (Hot Reload Enabled):**
+- **Backend Changes**: Edit files in `backend/` - changes are automatically reflected via volume mounts and nodemon
+- **Frontend Changes**: Edit files in `frontend/src/` - Vite hot-reloads automatically via volume mounts
+- No need to restart containers for code changes
+
+**Without Docker:**
 1. **Backend Changes**: 
    - Edit files in `backend/`
-   - If using Docker, restart: `docker-compose restart backend`
-   - If running manually, nodemon will auto-reload
+   - nodemon will auto-reload automatically
 
 2. **Frontend Changes**:
    - Edit files in `frontend/src/`
    - Vite will hot-reload automatically
-   - If using Docker, restart: `docker-compose restart frontend`
 
 ### Environment Variables
 

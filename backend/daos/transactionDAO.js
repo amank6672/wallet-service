@@ -10,10 +10,11 @@ import mongoose from 'mongoose';
  */
 class TransactionDAO {
   /**
-   * Find transactions with cursor-based pagination
+   * Find transactions with skip/limit pagination
    * Optimized with indexes, lean queries, and read replicas
    * @param {Object} query - MongoDB query object
    * @param {Object} options - Query options
+   * @param {number} options.skip - Number of documents to skip
    * @param {number} options.limit - Number of results
    * @param {Object} options.sort - Sort object
    * @param {string} options.indexHint - Index hint for query optimization
@@ -23,6 +24,7 @@ class TransactionDAO {
    */
   async find(query, options = {}) {
     const {
+      skip = 0,
       limit = 50,
       sort = { createdAt: -1 },
       indexHint = null,
@@ -34,6 +36,7 @@ class TransactionDAO {
       const queryBuilder = Transaction.find(query)
         .select('walletId amount balance description type createdAt')
         .sort(sort)
+        .skip(skip)
         .limit(limit)
         .lean()
         .maxTimeMS(10000);

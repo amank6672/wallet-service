@@ -6,9 +6,7 @@ import { supportsMongoTransactions } from '../db.js';
 import mongoose from 'mongoose';
 import { processTransaction } from './transactionService.js';
 import { 
-  buildTransactionQuery, 
-  normalizeLimit, 
-  buildPaginationMetadata 
+  normalizeLimit
 } from './transactionQueryService.js';
 
 /**
@@ -28,53 +26,52 @@ export async function getWallet(walletId) {
 }
 
 /**
- * Get transactions with cursor-based pagination for handling millions of records
- * Optimized with proper indexes, lean queries, and read preferences
+ * Get transactions with skip/limit pagination
+ * Required format: Array directly with skip/limit instead of cursor
  */
 export async function getTransactions(walletId, options = {}) {
   const {
-    limit = 50,
-    cursor = null,
-    type = null,
+    skip = 0,
+    limit = 25,
     sortBy = 'createdAt',
     sortOrder = 'desc',
   } = options;
 
   // Validate and normalize limit
-  const queryLimit = normalizeLimit(limit);
+  const queryLimit = normalizeLimit(limit, 1, 100);
+  const querySkip = Math.max(0, parseInt(skip) || 0);
 
-  // Build query
-  const query = buildTransactionQuery(walletId, type, cursor, sortOrder);
+  // Build query - no cursor, just walletId filter
+  const query = {};
+  if (walletId) {
+    query.walletId = new mongoose.Types.ObjectId(walletId);
+  }
 
+  // Map sortBy field - API uses 'date' but DB uses 'createdAt'
+  const sortField = sortBy === 'date' ? 'createdAt' : sortBy;
+  
   // Build sort object
   const sortDirection = sortOrder === 'desc' ? -1 : 1;
-  const sortObj = { [sortBy]: sortDirection };
+  const sortObj = { [sortField]: sortDirection };
 
-  // Execute query through DAO
-  // Note: Index hints are disabled by default to avoid errors if indexes don't exist yet
-  // MongoDB's query planner will automatically choose the best available index
-  // To enable hints, set ENABLE_INDEX_HINTS=true and ensure indexes are created
+  // Execute query through DAO with skip/limit
   const transactions = await transactionDAO.find(query, {
-    limit: queryLimit + 1, // Fetch one extra to determine if there's a next page
+    skip: querySkip,
+    limit: queryLimit,
     sort: sortObj,
-    indexHint: null, // Disabled for now - let MongoDB choose the best index
     useReadReplica: true,
   });
 
-  // Build pagination metadata
-  const pagination = buildPaginationMetadata(transactions, queryLimit);
-  const results = pagination.hasMore ? transactions.slice(0, queryLimit) : transactions;
-
   logger.debug('Transactions query executed', {
     walletId,
+    skip: querySkip,
     limit: queryLimit,
-    returned: results.length,
-    hasMore: pagination.hasMore,
+    returned: transactions.length,
   });
 
+  // Return transactions array directly (no pagination metadata)
   return {
-    transactions: results,
-    pagination,
+    transactions,
   };
 }
 
@@ -104,8 +101,9 @@ export async function setupWallet(name, initialBalance = 0) {
     }, options);
 
     // Create initial transaction if balance > 0
+    let initialTransaction = null;
     if (parseFloat(initialBalance) > 0) {
-      await transactionDAO.create({
+      initialTransaction = await transactionDAO.create({
         walletId: walletDoc._id,
         amount: balance,
         balance: balance,
@@ -125,7 +123,11 @@ export async function setupWallet(name, initialBalance = 0) {
       usedTransactions: useTransactions,
     });
 
-    return walletDoc;
+    // Return wallet with transaction ID if initial transaction was created
+    return {
+      wallet: walletDoc,
+      transactionId: initialTransaction ? initialTransaction._id.toString() : null,
+    };
   } catch (error) {
     if (useTransactions && session && session.inTransaction()) {
       await session.abortTransaction();

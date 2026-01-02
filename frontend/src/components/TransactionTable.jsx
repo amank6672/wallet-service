@@ -50,7 +50,7 @@ const TransactionTable = memo(function TransactionTable({ data, loading, sorting
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'createdAt',
+        accessorKey: 'date',
         header: 'Date',
         cell: renderDateCell,
         enableSorting: true,
@@ -89,7 +89,7 @@ const TransactionTable = memo(function TransactionTable({ data, loading, sorting
     getSortedRowModel: getSortedRowModel(),
     manualSorting: true, // Sorting is handled on the backend
     state: {
-      sorting: sorting || [{ id: 'createdAt', desc: true }],
+      sorting: sorting || [{ id: 'date', desc: true }],
     },
     onSortingChange: (updater) => {
       const newSorting = typeof updater === 'function' ? updater(sorting || []) : updater

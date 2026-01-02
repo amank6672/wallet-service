@@ -14,7 +14,7 @@ A high-performance, production-ready wallet service backend built with Node.js, 
 - **Security**: Helmet.js for security headers, CORS configuration
 - **Logging**: Structured logging with configurable log levels
 - **Health Checks**: Database connection status monitoring
-- **Pagination**: Cursor-based pagination for efficient handling of large datasets
+- **Pagination**: Skip/limit pagination for efficient handling of large datasets
 
 ## 📋 Table of Contents
 
@@ -248,19 +248,22 @@ Content-Type: application/json
 }
 ```
 
+**Request Body:**
+- `name` (required): Wallet owner name
+- `balance` (optional, default: 0): Initial balance (supports up to 4 decimal places)
+
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "507f1f77bcf86cd799439011",
-    "name": "John Doe",
-    "balance": "1000.50",
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  },
-  "timestamp": "2024-01-01T00:00:00.000Z"
+  "id": "507f1f77bcf86cd799439011",
+  "balance": "1000.5000",
+  "transactionId": "507f1f77bcf86cd799439012",
+  "name": "John Doe",
+  "date": "2024-01-01T00:00:00.000Z"
 }
 ```
+
+**Note:** `transactionId` is included only if initial balance > 0. Balance supports up to 4 decimal places precision.
 
 #### 3. Get Wallet
 ```http
@@ -270,14 +273,10 @@ GET /api/wallet/wallet/:id
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "507f1f77bcf86cd799439011",
-    "name": "John Doe",
-    "balance": "1000.50",
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z"
-  }
+  "id": "507f1f77bcf86cd799439011",
+  "balance": "1000.5000",
+  "name": "John Doe",
+  "date": "2024-01-01T00:00:00.000Z"
 }
 ```
 
@@ -294,51 +293,65 @@ X-Idempotency-Key: optional-unique-key
 }
 ```
 
+**Request Body:**
+- `amount` (required): Transaction amount (positive for credit, negative for debit)
+- `description` (optional): Transaction description
+- `idempotencyKey` (optional): Unique key to prevent duplicate transactions
+
 **Response:**
 ```json
 {
-  "success": true,
-  "data": {
-    "id": "507f1f77bcf86cd799439012",
-    "walletId": "507f1f77bcf86cd799439011",
-    "amount": "100.50",
-    "balance": "1101.00",
-    "type": "CREDIT",
-    "description": "Payment for services",
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  },
-  "timestamp": "2024-01-01T00:00:00.000Z"
+  "balance": "1100.5000",
+  "transactionId": "507f1f77bcf86cd799439012"
 }
 ```
 
+**Note:** 
+- Use positive amount for CREDIT, negative amount for DEBIT
+- Amount supports up to 4 decimal places (e.g., 4.1203, 0.321, 1.0045)
+- Balance is returned with 4 decimal precision
+
 #### 5. Get Transactions
 ```http
-GET /api/wallet/transactions?walletId=507f1f77bcf86cd799439011&limit=50&cursor=2024-01-01T00:00:00.000Z&sortBy=createdAt&sortOrder=desc
+GET /api/wallet/transactions?walletId=507f1f77bcf86cd799439011&skip=0&limit=25&sortBy=date&sortOrder=desc
 ```
 
 **Query Parameters:**
 - `walletId` (required): Wallet ID
-- `limit` (optional, default: 50, max: 1000): Number of transactions
-- `cursor` (optional): ISO date string for pagination
-- `sortBy` (optional, default: createdAt): Field to sort by
-- `sortOrder` (optional, default: desc): 'asc' or 'desc'
-- `type` (optional): Filter by 'CREDIT' or 'DEBIT'
+- `skip` (optional, default: 0): Number of transactions to skip
+- `limit` (optional, default: 25, max: 100): Number of transactions to return
+- `sortBy` (optional, default: 'date'): Field to sort by ('date' or 'amount')
+- `sortOrder` (optional, default: 'desc'): Sort order ('asc' or 'desc')
 
-**Response:**
+**Response:** Array of transactions (not wrapped in object)
 ```json
-{
-  "success": true,
-  "data": {
-    "transactions": [...],
-    "pagination": {
-      "limit": 50,
-      "hasMore": true,
-      "nextCursor": "2024-01-01T00:00:00.000Z",
-      "count": 50
-    }
+[
+  {
+    "id": "507f1f77bcf86cd799439012",
+    "walletId": "507f1f77bcf86cd799439011",
+    "amount": "100.5000",
+    "balance": "1100.5000",
+    "description": "Payment for services",
+    "date": "2024-01-01T00:00:00.000Z",
+    "type": "CREDIT"
+  },
+  {
+    "id": "507f1f77bcf86cd799439013",
+    "walletId": "507f1f77bcf86cd799439011",
+    "amount": "-50.2500",
+    "balance": "1050.2500",
+    "description": "Purchase",
+    "date": "2024-01-01T00:05:00.000Z",
+    "type": "DEBIT"
   }
-}
+]
 ```
+
+**Note:** 
+- Uses skip/limit pagination instead of cursor-based
+- Response is a direct array, not wrapped in an object
+- `date` field is used instead of `createdAt`
+- Each transaction includes `type` field ('CREDIT' or 'DEBIT')
 
 #### 6. Export Transactions (CSV)
 ```http
@@ -381,7 +394,7 @@ GET /api/wallet/transactions/export/csv?walletId=507f1f77bcf86cd799439011&limit=
 - `type` (ascending)
 - `{ walletId: 1, createdAt: -1 }` (compound)
 - `{ walletId: 1, type: 1, createdAt: -1 }` (compound)
-- `{ walletId: 1, _id: 1 }` (for cursor pagination)
+- `{ walletId: 1, amount: 1, createdAt: -1 }` (for amount sorting)
 - `createdAt` (descending)
 
 ### Idempotency Model
@@ -518,7 +531,7 @@ The codebase follows a **layered architecture** with clear separation of concern
 1. **Connection Pooling**: 100 max connections, 10 min connections
 2. **Indexes**: Compound indexes for common query patterns
 3. **Lean Queries**: Using `.lean()` to return plain JavaScript objects
-4. **Cursor Pagination**: Efficient for millions of records
+4. **Skip/Limit Pagination**: Efficient pagination with skip/limit parameters
 5. **Query Optimization**: Projection and selective field loading
 
 ### Application

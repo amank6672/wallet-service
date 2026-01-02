@@ -1,10 +1,9 @@
 import { useState, useCallback, memo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useWallet, useCreateWallet, useTransaction } from '../hooks/useWalletQuery.js';
-import { useDebounce } from '../utils/debounce.js';
 import { formatAmount } from '../utils/formatters.js';
 import { LoadingSkeleton } from '../components/LoadingSkeleton.jsx';
-import { STORAGE_KEYS } from '../config/constants.js';
+import { STORAGE_KEYS, TRANSACTION_TYPES } from '../config/constants.js';
 import styles from './WalletPage.module.css';
 
 /**
@@ -26,14 +25,13 @@ const WalletPage = memo(function WalletPage() {
   const transactionMutation = useTransaction();
   
   const [name, setName] = useState('');
+  const [initialBalance, setInitialBalance] = useState('');
   const [amount, setAmount] = useState('');
-  
-  // Debounce name input for validation
-  const debouncedName = useDebounce(name, 300);
+  const [transactionType, setTransactionType] = useState(TRANSACTION_TYPES.CREDIT);
 
   // Get error from either query or mutation
   const error = walletError?.message || createWalletMutation.error?.message || transactionMutation.error?.message;
-  const isLoading = walletLoading || createWalletMutation.isPending || transactionMutation.isPending;
+  const isLoading = walletLoading || createWalletMutation.isPending;
 
   const handleSetup = useCallback(async () => {
     if (!name.trim()) {
@@ -41,33 +39,40 @@ const WalletPage = memo(function WalletPage() {
     }
 
     try {
+      const balance = initialBalance && !isNaN(parseFloat(initialBalance)) 
+        ? parseFloat(initialBalance) 
+        : 0;
+      
       const result = await createWalletMutation.mutateAsync({
         name: name.trim(),
-        balance: 0,
+        balance: balance,
       });
       
       if (result?.id) {
         setName('');
+        setInitialBalance('');
       }
     } catch (err) {
       // Error is handled by mutation
       console.error('Failed to create wallet:', err);
     }
-  }, [name, createWalletMutation]);
+  }, [name, initialBalance, createWalletMutation]);
 
-  const handleTransaction = useCallback(async (type) => {
+  const handleTransaction = useCallback(async () => {
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0 || !walletId) {
       return;
     }
 
     try {
-      const transactionAmount = type === 'CREDIT' ? parseFloat(amount) : -parseFloat(amount);
+      const transactionAmount = transactionType === TRANSACTION_TYPES.CREDIT
+        ? parseFloat(amount) 
+        : -parseFloat(amount);
       const idempotencyKey = generateIdempotencyKey();
       
       await transactionMutation.mutateAsync({
         walletId,
         amount: transactionAmount,
-        description: `${type} transaction`,
+        description: `${transactionType} transaction`,
         idempotencyKey,
       });
       
@@ -76,7 +81,7 @@ const WalletPage = memo(function WalletPage() {
       // Error is handled by mutation
       console.error('Transaction failed:', err);
     }
-  }, [amount, walletId, transactionMutation]);
+  }, [amount, transactionType, walletId, transactionMutation]);
 
   const handleNameChange = useCallback((e) => {
     setName(e.target.value);
@@ -85,6 +90,11 @@ const WalletPage = memo(function WalletPage() {
   const handleAmountChange = useCallback((e) => {
     setAmount(e.target.value);
   }, []);
+
+  const handleInitialBalanceChange = useCallback((e) => {
+    setInitialBalance(e.target.value);
+  }, []);
+
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -101,7 +111,7 @@ const WalletPage = memo(function WalletPage() {
   if (walletLoading && !wallet) {
     return (
       <div className={styles.container}>
-        <LoadingSkeleton lines={5} showHeader />
+        <LoadingSkeleton />
       </div>
     );
   }
@@ -127,6 +137,17 @@ const WalletPage = memo(function WalletPage() {
               aria-label="User name"
               aria-required="true"
               onKeyPress={(e) => e.key === 'Enter' && handleSetup()}
+            />
+            <input
+              type="number"
+              placeholder="Initial balance (optional)"
+              value={initialBalance}
+              onChange={handleInitialBalanceChange}
+              className={styles.input}
+              disabled={isLoading}
+              min="0"
+              step="0.0001"
+              aria-label="Initial balance"
             />
             <button 
               onClick={handleSetup}
@@ -163,49 +184,57 @@ const WalletPage = memo(function WalletPage() {
         )}
 
         <div className={styles.transactionSection}>
+          <label className={styles.label}>Transaction Type</label>
+          <div className={styles.typeSelector}>
+            <button
+              type="button"
+              onClick={() => setTransactionType(TRANSACTION_TYPES.CREDIT)}
+              className={`${styles.typeButton} ${styles.typeButtonCredit} ${transactionType === TRANSACTION_TYPES.CREDIT ? styles.typeButtonActive : ''}`}
+              aria-label="Credit transaction"
+              disabled={transactionMutation.isPending}
+            >
+              <span className={styles.typeIcon}>+</span>
+              <span>Add Money</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTransactionType(TRANSACTION_TYPES.DEBIT)}
+              className={`${styles.typeButton} ${styles.typeButtonDebit} ${transactionType === TRANSACTION_TYPES.DEBIT ? styles.typeButtonActive : ''}`}
+              aria-label="Debit transaction"
+              disabled={transactionMutation.isPending}
+            >
+              <span className={styles.typeIcon}>−</span>
+              <span>Withdraw Money</span>
+            </button>
+          </div>
+
+          <label className={styles.label}>Amount</label>
           <input
             type="number"
-            placeholder="Amount"
+            placeholder="Enter amount"
             value={amount}
             onChange={handleAmountChange}
             className={styles.input}
-            disabled={isLoading}
+            disabled={transactionMutation.isPending}
             min="0"
-            step="0.01"
+            step="0.0001"
             aria-label="Transaction amount"
             onKeyPress={(e) => {
-              if (e.key === 'Enter' && amount) {
-                // Default to credit on Enter
-                handleTransaction('CREDIT');
+              if (e.key === 'Enter' && amount && !transactionMutation.isPending) {
+                handleTransaction();
               }
             }}
           />
 
-          <div className={styles.buttonGroup}>
-            <button 
-              onClick={() => handleTransaction('CREDIT')}
-              disabled={isLoading || !amount}
-              className={`${styles.button} ${styles.buttonCredit}`}
-              aria-label="Credit transaction"
-            >
-              Credit
-            </button>
-            <button 
-              onClick={() => handleTransaction('DEBIT')}
-              disabled={isLoading || !amount}
-              className={`${styles.button} ${styles.buttonDebit}`}
-              aria-label="Debit transaction"
-            >
-              Debit
-            </button>
-          </div>
+          <button 
+            onClick={handleTransaction}
+            disabled={transactionMutation.isPending || !amount || parseFloat(amount) <= 0}
+            className={`${styles.button} ${styles.buttonSubmit} ${transactionType === TRANSACTION_TYPES.CREDIT ? styles.buttonSubmitCredit : styles.buttonSubmitDebit}`}
+            aria-label={`${transactionType === TRANSACTION_TYPES.CREDIT ? 'Add' : 'Withdraw'} money`}
+          >
+            {transactionMutation.isPending ? 'Processing...' : transactionType === TRANSACTION_TYPES.CREDIT ? 'Add Money' : 'Withdraw Money'}
+          </button>
         </div>
-
-        {isLoading && (
-          <div className={styles.loadingMessage} aria-live="polite">
-            Processing...
-          </div>
-        )}
 
         <div className={styles.linkContainer}>
           <Link to="/transactions" className={styles.link}>

@@ -14,16 +14,15 @@ const TransactionsPage = memo(function TransactionsPage() {
   // Get wallet to ensure it exists
   const { data: wallet } = useWallet(walletId, { enabled: !!walletId });
   
-  // Pagination and sorting state
-  const [currentCursor, setCurrentCursor] = useState(null);
-  const [currentPageCursor, setCurrentPageCursor] = useState(null);
-  const [pageHistory, setPageHistory] = useState([]);
-  const [sorting, setSorting] = useState([{ id: 'createdAt', desc: true }]);
+  // Pagination and sorting state - using skip/limit
+  const [skip, setSkip] = useState(0);
+  const [sorting, setSorting] = useState([{ id: 'date', desc: true }]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Get sort parameters
-  const sortBy = sorting[0]?.id || 'createdAt';
+  // Get sort parameters - map 'date' to 'date' and 'amount' to 'amount'
+  const sortBy = sorting[0]?.id || 'date';
   const sortOrder = sorting[0]?.desc ? 'desc' : 'asc';
+  const limit = PAGINATION.DEFAULT_PAGE_SIZE;
 
   // React Query hook for transactions
   const {
@@ -32,75 +31,36 @@ const TransactionsPage = memo(function TransactionsPage() {
     error,
     isFetching,
   } = useTransactions(walletId, {
-    limit: PAGINATION.DEFAULT_PAGE_SIZE,
-    cursor: currentPageCursor,
+    skip,
+    limit,
     sortBy,
     sortOrder,
     enabled: !!walletId,
   });
 
-  const transactions = data?.transactions || [];
-  const pagination = data?.pagination || null;
-
-  // Update cursor when data changes
-  useEffect(() => {
-    if (transactions.length > 0) {
-      const lastTx = transactions[transactions.length - 1];
-      setCurrentCursor(lastTx.createdAt);
-    } else {
-      setCurrentCursor(null);
-    }
-  }, [transactions]);
-
-  // Update current page cursor when data loads
-  useEffect(() => {
-    if (data) {
-      setCurrentPageCursor(currentPageCursor);
-    }
-  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+  // API now returns array directly
+  const transactions = Array.isArray(data) ? data : [];
 
   const handleNextPage = useCallback(() => {
-    if (pagination?.hasMore && currentCursor) {
-      // Store the cursor that was used to load the current page
-      setPageHistory(prev => {
-        if (prev.length === 0 || prev[prev.length - 1] !== currentPageCursor) {
-          return [...prev, currentPageCursor];
-        }
-        return prev;
-      });
-      
-      setCurrentPage(prev => prev + 1);
-      setCurrentPageCursor(currentCursor);
-    }
-  }, [pagination, currentCursor, currentPageCursor]);
+    setSkip(prev => prev + limit);
+    setCurrentPage(prev => prev + 1);
+  }, [limit]);
 
   const handlePreviousPage = useCallback(() => {
-    if (pageHistory.length > 0) {
-      const previousCursor = pageHistory[pageHistory.length - 1];
-      setPageHistory(prev => prev.slice(0, -1));
-      setCurrentPage(prev => Math.max(1, prev - 1));
-      setCurrentPageCursor(previousCursor);
-    } else if (currentPage > 1) {
-      setCurrentPage(1);
-      setPageHistory([]);
-      setCurrentCursor(null);
-      setCurrentPageCursor(null);
-    }
-  }, [pageHistory, currentPage]);
+    const newSkip = Math.max(0, skip - limit);
+    setSkip(newSkip);
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  }, [skip, limit]);
 
   const handleFirstPage = useCallback(() => {
+    setSkip(0);
     setCurrentPage(1);
-    setPageHistory([]);
-    setCurrentCursor(null);
-    setCurrentPageCursor(null);
   }, []);
 
   const handleSortingChange = useCallback((newSorting) => {
     setSorting(newSorting);
     setCurrentPage(1);
-    setPageHistory([]);
-    setCurrentCursor(null);
-    setCurrentPageCursor(null);
+    setSkip(0);
   }, []);
 
   const handleExport = useCallback(() => {
@@ -109,8 +69,9 @@ const TransactionsPage = memo(function TransactionsPage() {
     }
   }, [walletId]);
 
-  const canGoNext = pagination?.hasMore && currentCursor && !isLoading;
-  const canGoPrevious = pageHistory.length > 0 || currentPage > 1;
+  // Determine if we can go to next page (if we got full page of results)
+  const canGoNext = transactions.length === limit && !isLoading;
+  const canGoPrevious = skip > 0;
   const loading = isLoading || isFetching;
 
   if (!walletId) {
@@ -170,8 +131,8 @@ const TransactionsPage = memo(function TransactionsPage() {
         <div className={styles.paginationInfo}>
           {transactions.length > 0 && (
             <>
-              Showing {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
-              {pagination?.hasMore && ' (more available)'}
+              Showing {skip + 1}-{skip + transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+              {canGoNext && ' (more available)'}
             </>
           )}
         </div>

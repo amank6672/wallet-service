@@ -15,8 +15,17 @@ export const walletSetupRules = [
     .isFloat({ min: 0 })
     .withMessage('Balance must be a non-negative number')
     .custom((value) => {
-      if (value !== undefined && (isNaN(value) || value < 0)) {
-        throw new Error('Balance must be a valid non-negative number');
+      if (value !== undefined) {
+        if (isNaN(value) || value < 0) {
+          throw new Error('Balance must be a valid non-negative number');
+        }
+        // Check decimal precision (up to 4 decimal places)
+        const numValue = parseFloat(value);
+        const strValue = numValue.toString();
+        const decimalPart = strValue.split('.')[1];
+        if (decimalPart && decimalPart.length > 4) {
+          throw new Error('Balance can have up to 4 decimal places (e.g., 20.5612)');
+        }
       }
       return true;
     }),
@@ -37,6 +46,13 @@ export const transactionRules = [
     .custom((value) => {
       if (value === 0) {
         throw new Error('Amount cannot be zero');
+      }
+      // Check decimal precision (up to 4 decimal places)
+      const numValue = Math.abs(parseFloat(value));
+      const strValue = numValue.toString();
+      const decimalPart = strValue.split('.')[1];
+      if (decimalPart && decimalPart.length > 4) {
+        throw new Error('Amount can have up to 4 decimal places (e.g., 4.1203, 0.321, 1.0045)');
       }
       return true;
     }),

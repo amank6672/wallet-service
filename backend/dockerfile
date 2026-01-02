@@ -6,4 +6,6 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 EXPOSE 3000
-CMD ["node", "server.js"]
+
+# Use nodemon in development for hot reloading
+CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"development\" ]; then yarn dev; else node server.js; fi"]

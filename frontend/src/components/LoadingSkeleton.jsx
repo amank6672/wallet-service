@@ -2,24 +2,15 @@ import { memo } from 'react';
 import styles from './LoadingSkeleton.module.css';
 
 /**
- * Loading skeleton component for better UX
+ * Simple loading spinner component
  */
-export const LoadingSkeleton = memo(function LoadingSkeleton({ 
-  lines = 3, 
-  showHeader = false,
-  className = '' 
-}) {
+export const LoadingSkeleton = memo(function LoadingSkeleton() {
   return (
-    <div className={`${styles.skeletonContainer} ${className}`}>
-      {showHeader && (
-        <div className={styles.skeletonHeader}>
-          <div className={styles.skeletonLine} style={{ width: '40%', height: '24px' }} />
-          <div className={styles.skeletonLine} style={{ width: '30%', height: '24px' }} />
-        </div>
-      )}
-      {Array.from({ length: lines }).map((_, index) => (
-        <div key={index} className={styles.skeletonLine} />
-      ))}
+    <div className={styles.loaderContainer}>
+      <div className={styles.loaderCard}>
+        <div className={styles.spinner}></div>
+        <p className={styles.loaderText}>Loading wallet...</p>
+      </div>
     </div>
   );
 });

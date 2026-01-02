@@ -22,15 +22,17 @@ A high-performance React frontend optimized for 10 million users, built with mod
 - **Error handling**: Comprehensive error mapping and user-friendly messages
 
 ### State Management
-- **Context API**: Global wallet state management to avoid prop drilling
-- **Custom hooks**: Reusable logic extracted into `useWallet` and `useTransactions`
+- **React Query**: Advanced data fetching and caching with automatic background updates
+- **Custom hooks**: Reusable logic extracted into `useWalletQuery` and `useTransactionsQuery`
 - **Optimistic updates**: Immediate UI feedback for transactions with rollback on error
+- **Smart caching**: React Query manages cache with 2-minute stale time for transactions
 
 ### User Experience
-- **Loading skeletons**: Skeleton screens instead of loading spinners for better perceived performance
-- **Debouncing**: Input debouncing to reduce unnecessary API calls
+- **Loading states**: Simple spinner loader for wallet loading
+- **Transaction type toggle**: Compact CREDIT/DEBIT segmented control for intuitive transaction selection
 - **Error boundaries**: Graceful error handling with fallback UI
 - **Accessibility**: ARIA labels, semantic HTML, keyboard navigation support
+- **Decimal precision**: All amounts displayed with up to 4 decimal places (e.g., ₹20.5612, ₹4.12)
 
 ## 📁 Project Structure
 
@@ -45,19 +47,15 @@ frontend/
 │   │   └── TransactionTable.jsx
 │   ├── config/              # Configuration
 │   │   └── constants.js     # App constants and config
-│   ├── context/             # React Context
-│   │   └── WalletContext.jsx
 │   ├── hooks/               # Custom React hooks
-│   │   ├── useWallet.js
-│   │   └── useTransactions.js
+│   │   ├── useWalletQuery.js
+│   │   └── useTransactionsQuery.js
 │   ├── pages/               # Page components
 │   │   ├── WalletPage.jsx
 │   │   └── TransactionsPage.jsx
 │   ├── utils/               # Utility functions
 │   │   ├── apiClient.js     # Optimized API client
-│   │   ├── cache.js         # Caching utilities
-│   │   ├── debounce.js      # Debounce utilities
-│   │   └── formatters.js    # Formatting utilities
+│   │   └── formatters.js    # Formatting utilities (amount display)
 │   ├── App.jsx              # Root component
 │   ├── main.jsx             # Entry point
 │   └── index.css            # Global styles
@@ -72,7 +70,7 @@ frontend/
 ```
 App
 ├── ErrorBoundary (catches all errors)
-├── WalletProvider (global state)
+├── QueryClientProvider (React Query)
 └── BrowserRouter
     └── Suspense (loading fallback)
         └── Routes
@@ -82,44 +80,58 @@ App
 
 ### Data Flow
 1. **User Action** → Component Event Handler
-2. **Custom Hook** → Business Logic
-3. **API Client** → Request (with caching/deduplication)
+2. **React Query Hook** → Data Fetching/Mutation
+3. **API Client** → Request
 4. **Backend API** → Response
-5. **Cache Update** → State Update
+5. **React Query Cache** → Automatic cache update
 6. **Component Re-render** → UI Update
 
 ## 🔧 Key Features
 
-### 1. Optimized API Client (`utils/apiClient.js`)
+### 1. Wallet Management
+- **Wallet Setup**: Create wallet with optional initial balance (supports up to 4 decimal places, e.g., 20.5612)
+- **Balance Display**: Real-time balance updates after transactions, displayed with up to 4 decimal places
+- **Transaction Processing**: Compact CREDIT/DEBIT segmented toggle with amount input
+- **Local Storage**: Wallet ID persisted in browser for seamless return visits
+
+### 2. Transaction History
+- **Pagination**: Skip/limit pagination for efficient data loading
+- **Sorting**: Sort by date or amount (ascending/descending)
+- **CSV Export**: Download transaction history as CSV file
+- **Real-time Updates**: Automatic refresh after new transactions
+
+### 3. Optimized API Client (`utils/apiClient.js`)
 - Request deduplication for concurrent requests
 - TTL-based caching for GET requests
 - Automatic retry with exponential backoff
 - Error handling and mapping
 
-### 2. Custom Hooks
+### 4. React Query Hooks
 
-#### `useWallet` Hook
-- Wallet creation
-- Transaction processing with optimistic updates
-- Wallet refresh
-- Error handling
+#### `useWalletQuery` Hook
+- Wallet data fetching with React Query
+- Automatic cache management
+- Wallet refresh on mutations
+- Error handling and loading states
 
-#### `useTransactions` Hook
-- Cursor-based pagination
-- Backend sorting
+#### `useTransactionsQuery` Hook
+- Skip/limit pagination with React Query
+- Backend sorting (by date or amount)
 - Page navigation (first, previous, next)
+- Smart caching (2-minute stale time)
 - Loading and error states
 
-### 3. Error Handling
+### 5. Error Handling
 - **Error Boundary**: Catches React errors and displays fallback UI
 - **API Errors**: User-friendly error messages with proper error codes
 - **Network Errors**: Automatic retry and graceful degradation
 
-### 4. Caching Strategy
-- **Wallet Cache**: 5 minutes TTL
-- **Transactions Cache**: 2 minutes TTL
+### 6. Caching Strategy (React Query)
+- **Wallet Cache**: Managed by React Query with automatic invalidation
+- **Transactions Cache**: 2-minute stale time, cached per page (skip/limit)
 - **Cache Invalidation**: Automatic on mutations (POST, PUT, DELETE)
-- **Cache Key**: Based on endpoint and query parameters
+- **Cache Key**: Based on endpoint and query parameters (walletId, skip, limit, sortBy, sortOrder)
+- **Background Refetching**: Automatic refetch on window focus and network reconnect
 
 ## 🎨 Styling
 
@@ -245,7 +257,6 @@ The `dist/` folder contains the production build ready for deployment to:
 ## 🔄 Future Enhancements
 
 - [ ] TypeScript migration for type safety
-- [ ] React Query for advanced caching and synchronization
 - [ ] Service Worker for offline support
 - [ ] Virtual scrolling for very large transaction lists
 - [ ] WebSocket integration for real-time updates

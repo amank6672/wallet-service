@@ -6,7 +6,9 @@ import {
 } from '../services/walletService.js';
 import { 
   mapWalletToResponse, 
+  mapWalletSetupToResponse,
   mapTransactionToResponse, 
+  mapTransactionToTransactResponse,
   mapTransactionsToResponse 
 } from '../utils/mappers.js';
 import { 
@@ -16,12 +18,13 @@ import {
 
 /**
  * Setup a new wallet
+ * Required response: { id, balance, transactionId, name, date }
  */
 export const setupWallet = async (req, res, next) => {
   try {
     const { name, balance = 0 } = req.body;
-    const wallet = await setupWalletService(name, balance);
-    res.json(mapWalletToResponse(wallet));
+    const result = await setupWalletService(name, balance);
+    res.json(mapWalletSetupToResponse(result.wallet, result.transactionId));
   } catch (error) {
     next(error);
   }
@@ -29,6 +32,7 @@ export const setupWallet = async (req, res, next) => {
 
 /**
  * Process a transaction
+ * Required response: { balance, transactionId }
  */
 export const transactAmount = async (req, res, next) => {
   try {
@@ -42,7 +46,7 @@ export const transactAmount = async (req, res, next) => {
       idempotencyKey
     );
     
-    res.json(mapTransactionToResponse(transaction));
+    res.json(mapTransactionToTransactResponse(transaction));
   } catch (error) {
     next(error);
   }
@@ -63,23 +67,22 @@ export const getWallet = async (req, res, next) => {
 
 /**
  * Get transactions with pagination
+ * Required: Use skip/limit instead of cursor
+ * Required response: Array directly [{ id, walletId, amount, balance, description, date, type }, ...]
  */
 export const getTransactions = async (req, res, next) => {
   try {
-    const { walletId, limit, cursor, type, sortBy, sortOrder } = req.query;
+    const { walletId, skip = 0, limit = 25, sortBy, sortOrder } = req.query;
     
     const result = await getTransactionsService(walletId, {
-      limit: limit ? parseInt(limit) : 50,
-      cursor,
-      type,
-      sortBy: sortBy || 'createdAt',
+      skip: parseInt(skip),
+      limit: parseInt(limit),
+      sortBy: sortBy || 'date',
       sortOrder: sortOrder || 'desc',
     });
     
-    res.json({
-      transactions: mapTransactionsToResponse(result.transactions),
-      pagination: result.pagination,
-    });
+    // Return array directly as per requirements
+    res.json(mapTransactionsToResponse(result.transactions));
   } catch (error) {
     next(error);
   }
