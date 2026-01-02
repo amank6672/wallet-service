@@ -1,0 +1,186 @@
+.tableContainer {
+  overflow-x: auto;
+  margin-top: 0;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 800px;
+}
+
+.thead {
+  background: #1a1a1a;
+}
+
+.th {
+  padding: 14px 16px;
+  border-bottom: 2px solid #333;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.th:first-child {
+  width: 20%;
+  min-width: 180px;
+}
+
+.th:nth-child(2) {
+  width: 15%;
+  min-width: 120px;
+}
+
+.th:nth-child(3) {
+  width: 15%;
+  min-width: 120px;
+}
+
+.th:nth-child(4) {
+  width: 12%;
+  min-width: 100px;
+}
+
+.th:last-child {
+  width: 38%;
+  min-width: 200px;
+}
+
+.thSortable {
+  cursor: pointer;
+}
+
+.thLeft {
+  text-align: left;
+}
+
+.thRight {
+  text-align: right;
+}
+
+.thCenter {
+  text-align: center;
+}
+
+.thContent {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.thContentRight {
+  justify-content: flex-end;
+}
+
+.thContentCenter {
+  justify-content: center;
+}
+
+.sortIcon {
+  font-size: 10px;
+}
+
+.tr {
+  border-bottom: 1px solid #2a2a2a;
+  transition: background-color 0.2s;
+}
+
+.tr:hover {
+  background: #222 !important;
+}
+
+.trEven {
+  background: #1a1a1a;
+}
+
+.trOdd {
+  background: #1f1f1f;
+}
+
+.td {
+  padding: 14px 16px;
+  color: #fff;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  vertical-align: middle;
+}
+
+.tdLeft {
+  text-align: left;
+}
+
+.tdRight {
+  text-align: right;
+}
+
+.tdCenter {
+  text-align: center;
+}
+
+.cellText {
+  color: #ccc;
+  display: block;
+  line-height: 1.5;
+}
+
+.cellAmount {
+  font-weight: 500;
+}
+
+.cellAmountCredit {
+  color: #4CAF50;
+}
+
+.cellAmountDebit {
+  color: #f44336;
+}
+
+.cellBalance {
+  font-weight: 500;
+  color: #fff;
+}
+
+.typeBadge {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.typeBadgeCredit {
+  background: #1b5e20;
+  color: #81c784;
+}
+
+.typeBadgeDebit {
+  background: #b71c1c;
+  color: #ef5350;
+}
+
+.emptyState {
+  padding: 40px;
+  text-align: center;
+  color: #ccc;
+}
+
+.loadingState {
+  padding: 40px;
+  text-align: center;
+  color: #ccc;
+}
+

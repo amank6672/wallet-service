@@ -1,0 +1,167 @@
+.container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: calc(100vh - 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  width: 100%;
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 32px;
+  border: 1px solid #333;
+}
+
+.title {
+  color: #fff;
+  margin-bottom: 24px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.balanceContainer {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding: 16px;
+  background: #0a0a0a;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+}
+
+.balanceLabel {
+  color: #999;
+  font-size: 16px;
+}
+
+.balanceAmount {
+  color: #4CAF50;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.errorMessage {
+  color: #ff4444;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #2a0a0a;
+  border: 1px solid #ff4444;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transactionSection {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input {
+  padding: 12px;
+  width: 100%;
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #2196F3;
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 44px;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonPrimary {
+  background: #2196F3;
+  color: white;
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: #1976D2;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.buttonCredit {
+  flex: 1;
+  background: #4CAF50;
+  color: white;
+}
+
+.buttonCredit:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.buttonDebit {
+  flex: 1;
+  background: #f44336;
+  color: white;
+}
+
+.buttonDebit:hover:not(:disabled) {
+  background: #da190b;
+}
+
+.loadingMessage {
+  margin-top: 16px;
+  color: #999;
+  text-align: center;
+  font-size: 14px;
+}
+
+.linkContainer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #2a2a2a;
+}
+
+.link {
+  color: #2196F3;
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.2s;
+  display: inline-block;
+}
+
+.link:hover {
+  color: #1976D2;
+  text-decoration: underline;
+}
+

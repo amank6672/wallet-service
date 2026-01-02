@@ -1,0 +1,91 @@
+.skeletonContainer {
+  padding: 20px;
+}
+
+.skeletonHeader {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.skeletonLine {
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    #2a2a2a 0%,
+    #333 50%,
+    #2a2a2a 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.skeletonLine:last-child {
+  margin-bottom: 0;
+}
+
+.tableSkeleton {
+  margin-top: 20px;
+}
+
+.skeletonTableHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
+  gap: 12px;
+  padding: 12px;
+  background: #1a1a1a;
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 1px;
+}
+
+.skeletonHeaderCell {
+  height: 20px;
+  background: linear-gradient(
+    90deg,
+    #2a2a2a 0%,
+    #333 50%,
+    #2a2a2a 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeletonTableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 2fr;
+  gap: 12px;
+  padding: 12px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.skeletonTableRow:last-child {
+  border-bottom: none;
+  border-radius: 0 0 4px 4px;
+}
+
+.skeletonTableCell {
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    #2a2a2a 0%,
+    #333 50%,
+    #2a2a2a 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+

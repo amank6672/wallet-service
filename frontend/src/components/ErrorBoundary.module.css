@@ -1,0 +1,68 @@
+.errorBoundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: #130e0e;
+}
+
+.errorContent {
+  max-width: 500px;
+  text-align: center;
+  padding: 40px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.errorTitle {
+  color: #ff4444;
+  margin-bottom: 16px;
+  font-size: 24px;
+}
+
+.errorMessage {
+  color: #ccc;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.resetButton {
+  padding: 12px 24px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.resetButton:hover {
+  background: #1976D2;
+}
+
+.errorDetails {
+  margin-top: 24px;
+  text-align: left;
+  color: #999;
+  font-size: 12px;
+}
+
+.errorDetails summary {
+  cursor: pointer;
+  margin-bottom: 8px;
+  color: #ccc;
+}
+
+.errorDetails pre {
+  background: #0a0a0a;
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
+

@@ -1,0 +1,147 @@
+.container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: #fff;
+  min-height: calc(100vh - 48px);
+}
+
+.title {
+  color: #fff;
+  margin-bottom: 24px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.errorMessage {
+  color: #ff4444;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #2a0a0a;
+  border-radius: 6px;
+  border: 1px solid #ff4444;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.actions {
+  margin-bottom: 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.actions > *:first-child {
+  margin-right: auto;
+}
+
+.actions > *:last-child {
+  margin-left: auto;
+}
+
+.button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+}
+
+.button:not(:disabled) {
+  cursor: pointer;
+}
+
+.buttonExport {
+  background: #2196F3;
+  color: white;
+}
+
+.buttonExport:disabled {
+  opacity: 0.6;
+}
+
+.buttonFirst {
+  background: #666;
+  color: white;
+}
+
+.buttonFirst:disabled {
+  background: #555;
+  opacity: 0.5;
+}
+
+.buttonPrevious {
+  background: #666;
+  color: white;
+}
+
+.buttonPrevious:disabled {
+  background: #555;
+  opacity: 0.5;
+}
+
+.buttonNext {
+  background: #4CAF50;
+  color: white;
+}
+
+.buttonNext:disabled {
+  background: #555;
+  opacity: 0.5;
+}
+
+.link {
+  color: #2196F3;
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1px solid #2196F3;
+  border-radius: 4px;
+  display: inline-block;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.link:hover {
+  background-color: #2196F3;
+  color: white;
+}
+
+.pagination {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #2a2a2a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.paginationInfo {
+  color: #ccc;
+  font-size: 14px;
+}
+
+.paginationControls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.pageNumber {
+  color: #ccc;
+  padding: 0 10px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+

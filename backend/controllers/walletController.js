@@ -1,67 +1,105 @@
-import Wallet from '../models/Wallet.js';
-import Transaction from '../models/Transaction.js';
-import { toDecimal } from '../utils/decimal.js';
-import { toCSV } from '../utils/csv.js';
-import { transact } from '../services/walletService.js';
+import { 
+  transact, 
+  getWallet as getWalletService, 
+  getTransactions as getTransactionsService,
+  setupWallet as setupWalletService,
+} from '../services/walletService.js';
+import { 
+  mapWalletToResponse, 
+  mapTransactionToResponse, 
+  mapTransactionsToResponse 
+} from '../utils/mappers.js';
+import { 
+  exportTransactionsCSV, 
+  generateCSVFilename 
+} from '../services/exportService.js';
 
-export const exportCSV = async (req, res) => {
-  const txs = await Transaction.find({ walletId: req.query.walletId })
-    .sort({ createdAt: -1 });
-
-  res.header('Content-Type', 'text/csv');
-  res.attachment('transactions.csv');
-  res.send(toCSV(txs));
+/**
+ * Setup a new wallet
+ */
+export const setupWallet = async (req, res, next) => {
+  try {
+    const { name, balance = 0 } = req.body;
+    const wallet = await setupWalletService(name, balance);
+    res.json(mapWalletToResponse(wallet));
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const setupWallet = async (req, res) => {
-  const { name, balance = 0 } = req.body;
-
-  const wallet = await Wallet.create({
-    name,
-    balance: toDecimal(balance)
-  });
-
-  await Transaction.create({
-    walletId: wallet._id,
-    amount: toDecimal(balance),
-    balance: toDecimal(balance),
-    description: 'Setup',
-    type: 'CREDIT'
-  });
-
-  res.json({
-    id: wallet._id,
-    name,
-    balance,
-    date: wallet.createdAt
-  });
+/**
+ * Process a transaction
+ */
+export const transactAmount = async (req, res, next) => {
+  try {
+    const { walletId } = req.params;
+    const { amount, description, idempotencyKey } = req.body;
+    
+    const transaction = await transact(
+      walletId,
+      amount,
+      description,
+      idempotencyKey
+    );
+    
+    res.json(mapTransactionToResponse(transaction));
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const transactAmount = async (req, res) => {
-  const tx = await transact(
-    req.params.walletId,
-    req.body.amount,
-    req.body.description
-  );
-
-  res.json({
-    balance: tx.balance,
-    transactionId: tx._id
-  });
+/**
+ * Get wallet details
+ */
+export const getWallet = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const wallet = await getWalletService(id);
+    res.json(mapWalletToResponse(wallet));
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const getWallet = async (req, res) => {
-  const wallet = await Wallet.findById(req.params.id);
-  res.json(wallet);
+/**
+ * Get transactions with pagination
+ */
+export const getTransactions = async (req, res, next) => {
+  try {
+    const { walletId, limit, cursor, type, sortBy, sortOrder } = req.query;
+    
+    const result = await getTransactionsService(walletId, {
+      limit: limit ? parseInt(limit) : 50,
+      cursor,
+      type,
+      sortBy: sortBy || 'createdAt',
+      sortOrder: sortOrder || 'desc',
+    });
+    
+    res.json({
+      transactions: mapTransactionsToResponse(result.transactions),
+      pagination: result.pagination,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const getTransactions = async (req, res) => {
-  const { walletId, skip = 0, limit = 10 } = req.query;
+/**
+ * Export transactions as CSV
+ * Note: For millions of transactions, consider streaming or async job processing
+ */
+export const exportCSV = async (req, res, next) => {
+  try {
+    const { walletId, limit = 10000 } = req.query;
+    
+    const csvContent = await exportTransactionsCSV(walletId, parseInt(limit));
+    const filename = generateCSVFilename(walletId);
 
-  const txs = await Transaction.find({ walletId })
-    .sort({ createdAt: -1 })
-    .skip(Number(skip))
-    .limit(Number(limit));
-
-  res.json(txs);
+    res.header('Content-Type', 'text/csv');
+    res.header('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csvContent);
+  } catch (error) {
+    next(error);
+  }
 };
